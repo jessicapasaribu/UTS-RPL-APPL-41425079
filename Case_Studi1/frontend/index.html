@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MediTrack Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+  display: flex;
+  margin: 0;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #2c3e50;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  text-align: center;
+}
+
+.sidebar button {
+  width: 100%;
+  margin: 5px 0;
+  background: none;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.sidebar button:hover {
+  background: #34495e;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 20px;
+  background: #ecf0f1;
+}
+
+.card {
+  margin-bottom: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>MediTrack</h2>
+  <button onclick="show('user')">User</button>
+  <button onclick="show('appointment')">Appointment</button>
+  <button onclick="show('ehr')">EHR</button>
+  <button onclick="show('pharmacy')">Pharmacy</button>
+  <button onclick="show('payment')">Payment</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- USER -->
+<div id="user">
+  <div class="card p-3">
+    <h3>User</h3>
+    <input class="form-control" id="u_name" placeholder="Name">
+    <input class="form-control" id="u_email" placeholder="Email">
+    <select class="form-control" id="u_role">
+      <option>patient</option>
+      <option>doctor</option>
+      <option>admin</option>
+    </select>
+    <button class="btn btn-success mt-2" onclick="addUser()">Add</button>
+    <button class="btn btn-primary mt-2" onclick="getUsers()">Refresh</button>
+
+    <table class="table mt-2">
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- APPOINTMENT -->
+<div id="appointment" style="display:none">
+  <div class="card p-3">
+    <h3>Appointment</h3>
+    <input class="form-control" id="a_patient" placeholder="Patient ID">
+    <input class="form-control" id="a_doctor" placeholder="Doctor ID">
+    <input class="form-control" id="a_date" placeholder="Date">
+    <button class="btn btn-success mt-2" onclick="addAppointment()">Add</button>
+    <button class="btn btn-primary mt-2" onclick="getAppointments()">Refresh</button>
+
+    <table class="table mt-2">
+      <tbody id="appointmentTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- EHR -->
+<div id="ehr" style="display:none">
+  <div class="card p-3">
+    <h3>EHR</h3>
+    <input class="form-control" id="e_patient" placeholder="Patient ID">
+    <input class="form-control" id="e_record" placeholder="Record">
+    <button class="btn btn-success mt-2" onclick="addEHR()">Add</button>
+    <button class="btn btn-primary mt-2" onclick="getEHR()">Refresh</button>
+
+    <table class="table mt-2">
+      <tbody id="ehrTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PHARMACY -->
+<div id="pharmacy" style="display:none">
+  <div class="card p-3">
+    <h3>Pharmacy</h3>
+    <input class="form-control" id="p_name" placeholder="Drug Name">
+    <input class="form-control" id="p_stock" placeholder="Stock">
+    <button class="btn btn-success mt-2" onclick="addDrug()">Add</button>
+    <button class="btn btn-primary mt-2" onclick="getDrugs()">Refresh</button>
+
+    <table class="table mt-2">
+      <tbody id="drugTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div id="payment" style="display:none">
+  <div class="card p-3">
+    <h3>Payment</h3>
+    <input class="form-control" id="pay_user" placeholder="User ID">
+    <input class="form-control" id="pay_amount" placeholder="Amount">
+    <button class="btn btn-success mt-2" onclick="addPayment()">Pay</button>
+    <button class="btn btn-primary mt-2" onclick="getPayments()">Refresh</button>
+
+    <table class="table mt-2">
+      <tbody id="paymentTable"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const API = "http://localhost:8000";
+
+function show(x){
+  document.querySelectorAll(".content > div").forEach(d=>d.style.display="none");
+  document.getElementById(x).style.display="block";
+}
+
+/* USER */
+async function addUser(){
+
+  const data = {
+    name: u_name.value,
+    email: u_email.value,
+    role: u_role.value
+  };
+
+  if(editId){
+    // UPDATE
+    await fetch(API+"/users/"+editId, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+    editId = null;
+  } else {
+    // CREATE
+    await fetch(API+"/users", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+  }
+
+  // reset form
+  u_name.value = "";
+  u_email.value = "";
+  u_role.value = "patient";
+
+  getUsers();
+}
+async function getUsers(){
+  let r = await fetch(API+"/users");
+  let data = await r.json();
+
+  userTable.innerHTML = "";
+
+  data.forEach(u=>{
+    userTable.innerHTML += `
+    <tr>
+      <td>${u.id}</td>
+      <td>${u.name}</td>
+      <td>
+        <button onclick="editUser(${u.id}, '${u.name}', '${u.email}', '${u.role}')">Edit</button>
+        <button onclick="deleteUser(${u.id})">Delete</button>
+      </td>
+    </tr>`;
+  });
+}
+async function deleteUser(id){
+  await fetch(API+"/users/"+id, {
+    method: "DELETE"
+  });
+
+  getUsers();
+}
+let editId = null;
+
+function editUser(id, name, email, role){
+  editId = id;
+  u_name.value = name;
+  u_email.value = email;
+  u_role.value = role;
+}
+
+/* APPOINTMENT */
+async function addAppointment(){
+  await fetch(API+"/appointments",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({patient_id:a_patient.value,doctor_id:a_doctor.value,date:a_date.value})});
+  getAppointments();
+}
+async function getAppointments(){
+  let r=await fetch(API+"/appointments"); let d=await r.json();
+  appointmentTable.innerHTML="";
+  d.forEach(a=>appointmentTable.innerHTML+=`<tr><td>${a.id}</td><td>${a.date}</td></tr>`);
+}
+
+/* EHR */
+async function addEHR(){
+  await fetch(API+"/ehr",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({patient_id:e_patient.value,record:e_record.value})});
+  getEHR();
+}
+async function getEHR(){
+  let r=await fetch(API+"/ehr"); let d=await r.json();
+  ehrTable.innerHTML="";
+  d.forEach(e=>ehrTable.innerHTML+=`<tr><td>${e.id}</td><td>${e.record}</td></tr>`);
+}
+
+/* PHARMACY */
+async function addDrug(){
+  await fetch(API+"/drugs",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({name:p_name.value,stock:parseInt(p_stock.value)})});
+  getDrugs();
+}
+async function getDrugs(){
+  let r=await fetch(API+"/drugs"); let d=await r.json();
+  drugTable.innerHTML="";
+  d.forEach(e=>drugTable.innerHTML+=`<tr><td>${e.id}</td><td>${e.name}</td></tr>`);
+}
+
+/* PAYMENT */
+async function addPayment(){
+  await fetch(API+"/payments",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({user_id:pay_user.value,amount:parseFloat(pay_amount.value)})});
+  getPayments();
+}
+async function getPayments(){
+  let r=await fetch(API+"/payments"); let d=await r.json();
+  paymentTable.innerHTML="";
+  d.forEach(e=>paymentTable.innerHTML+=`<tr><td>${e.id}</td><td>${e.amount}</td></tr>`);
+}
+</script>
+
+</body>
+</html>
