@@ -1,7 +1,0 @@
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\MainApp.java
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\appointment\AppointmentService.java
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\auth\AuthService.java
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\database\DBConnection.java
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\ehr\EHRService.java
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\payment\PaymentService.java
-D:\INSTITUT_TEKNOLOGI_DEL\D4_Ekstensi\Semester_2\APPL\UTS\Case_Studi_2\hospital-monolith\src\com\hospital\pharmacy\PharmacyService.java
